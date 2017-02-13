@@ -1,4 +1,4 @@
-import os, sys, pygame
+import os, sys, pygame, math
 from pygame.locals import *
 
 pygame.init()
@@ -28,7 +28,7 @@ def update_dict(sprite_name, dict):
 
 # just blit rewritten for convenience
 def render(x, y, sprite):
-    window_surface_obj.blit(sprite, (x, y))
+    window_surface_obj.blit(sprite, (x * 16, y * 16))
 
 
 # render a variable as text onscreen
@@ -37,6 +37,12 @@ def display_data(x, y, data, font, color):
     window_surface_obj.blit(datatext, (x, y))
 
 
+snake = [[20, 15], [21, 15], [22, 15], [23, 15]]
+direction = 180
+locations = {}
+for x in range(1, len(snake), 1):
+    locations[x] = snake[x - 1]
+time = 0
 # auto fill dictionary with sprites from resources
 img_dict = {}
 for filename in os.listdir('resources'):
@@ -50,6 +56,29 @@ while not crashed:
             pygame.quit()
             sys.exit()
     if pygame.key.get_pressed()[pygame.K_UP] != 0:
-        pass
+        if direction != 90:
+            direction = -90
+    if pygame.key.get_pressed()[pygame.K_LEFT] != 0:
+        if direction != 0:
+            direction = 180
+    if pygame.key.get_pressed()[pygame.K_RIGHT] != 0:
+        if direction != 180:
+            direction = 0
+    if pygame.key.get_pressed()[pygame.K_DOWN] != 0:
+        if direction != -90:
+            direction = 90
+    if time % 15 == 0:
+        for x in range(0, len(snake), 1):
+            locations[x] = [snake[x][0],snake[x][1]]
+            if x != 0:
+                snake[x] = locations[x - 1]
+            else:
+                snake[0][0] += math.cos(math.radians(direction))
+                snake[0][1] += math.sin(math.radians(direction))
+    for s in snake:
+        render(s[0], s[1], img_dict['block'])
+    display_data(0, 0, direction, font_obj, white)
+    display_data(0, 10, locations, font_obj, white)
     pygame.display.update()
+    time += 1
     fps_clock.tick(30)
